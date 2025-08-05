@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
@@ -49,7 +49,7 @@ export async function verifyToken(request: NextRequest): Promise<AuthenticatedUs
 }
 
 export function createAuthResponse(message: string = 'Authentication required') {
-  return Response.json(
+  return NextResponse.json(
     {
       success: false,
       error: message,

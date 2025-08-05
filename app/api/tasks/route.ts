@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Task from '@/models/Task';
 import { verifyToken, createAuthResponse } from '@/lib/auth';
+import { withEndpointCheck } from '@/lib/endpointMiddleware';
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   try {
     // Verify authentication
     const user = await verifyToken(request);
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     // Verify authentication
     const user = await verifyToken(request);
@@ -78,3 +79,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Export wrapped handlers with endpoint status checking
+export const GET = withEndpointCheck(handleGET, 'GET', '/api/tasks');
+export const POST = withEndpointCheck(handlePOST, 'POST', '/api/tasks');
