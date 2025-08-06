@@ -6,6 +6,8 @@ import Header from './Header';
 import DashboardPage from './pages/DashboardPage';
 import ManageUsersPage from './pages/ManageUsersPage';
 import ApiEndpointsPage from './pages/ApiEndpointsPage';
+import RateLimitingPage from './pages/RateLimitingPage';
+import DocumentationPage from './pages/DocumentationPage';
 import ApiAnalyticsPage from './pages/ApiAnalyticsPage';
 import SystemLogsPage from './pages/SystemLogsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -26,6 +28,10 @@ export default function HomePage() {
         return <ManageUsersPage />;
       case 'api-endpoints':
         return <ApiEndpointsPage />;
+      case 'rate-limiting':
+        return <RateLimitingPage />;
+      case 'documentation':
+        return <DocumentationPage />;
       case 'api-analytics':
         return <ApiAnalyticsPage />;
       case 'system-logs':

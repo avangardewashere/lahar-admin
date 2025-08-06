@@ -18,14 +18,32 @@ const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: 'dashboard' },
   { name: 'Manage Users', href: 'manage-users' },
   { name: 'API Endpoints', href: 'api-endpoints' },
+  { name: 'Rate Limiting', href: 'rate-limiting' },
+  { name: 'Documentation', href: 'documentation' },
   { name: 'API Analytics', href: 'api-analytics' },
   { name: 'System Logs', href: 'system-logs' },
   { name: 'Settings', href: 'admin-settings' },
 ];
 
 export default function Header({ currentPage, onNavigate }: HeaderProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Filter navigation based on user role
+  const filteredNavigation = navigation.filter(item => {
+    if (!user) return false;
+    
+    // All authenticated users can access Dashboard
+    if (item.href === 'dashboard') return true;
+    
+    // Only admins and superadmins can access admin features
+    const adminOnlyPages = ['manage-users', 'api-endpoints', 'rate-limiting', 'documentation', 'api-analytics', 'system-logs', 'admin-settings'];
+    if (adminOnlyPages.includes(item.href)) {
+      return user.role === 'admin' || user.role === 'superadmin';
+    }
+    
+    return true;
+  });
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -58,7 +76,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-1">
-            {navigation.map((item) => (
+            {filteredNavigation.map((item) => (
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.href)}
@@ -123,7 +141,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 z-50 bg-white shadow-lg border-t border-gray-200">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navigation.map((item) => (
+            {filteredNavigation.map((item) => (
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.href)}

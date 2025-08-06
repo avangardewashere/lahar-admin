@@ -6,14 +6,17 @@ interface User {
   id: string;
   email: string;
   name: string;
+  role: 'user' | 'admin' | 'superadmin';
+  isActive: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string, registrationSource?: string, inviteCode?: string) => Promise<boolean>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
 }
 
@@ -29,11 +32,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const savedUser = localStorage.getItem('user');
     
     if (savedToken && savedUser) {
+      const parsedUser = JSON.parse(savedUser);
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(parsedUser);
+      
+      // If user doesn't have role info, refresh from server
+      if (!parsedUser.role) {
+        console.log('User missing role info, refreshing from server...');
+        refreshUserFromServer(savedToken);
+      }
     }
     setLoading(false);
   }, []);
+
+  const refreshUserFromServer = async (authToken: string) => {
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUser(data.data.user);
+          localStorage.setItem('user', JSON.stringify(data.data.user));
+          console.log('User data refreshed:', data.data.user);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -62,14 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (email: string, password: string, name: string, registrationSource = 'frontend', inviteCode?: string): Promise<boolean> => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          name, 
+          registrationSource,
+          ...(inviteCode && { inviteCode })
+        }),
       });
 
       const data = await response.json();
@@ -89,6 +126,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshUser = async () => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      await refreshUserFromServer(savedToken);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -97,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

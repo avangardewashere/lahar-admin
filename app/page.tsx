@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from '@/components/LoginForm';
-import RegisterForm from '@/components/RegisterForm';
+import AdminRegisterForm from '@/components/AdminRegisterForm';
 import HomePage from '@/components/HomePage';
 
 export default function Home() {
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
 
         {showRegister ? (
-          <RegisterForm onSwitchToLogin={() => setShowRegister(false)} />
+          <AdminRegisterForm onSwitchToLogin={() => setShowRegister(false)} />
         ) : (
           <LoginForm onSwitchToRegister={() => setShowRegister(true)} />
         )}

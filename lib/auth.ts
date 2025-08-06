@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
+import User, { UserRole } from '@/models/User';
 
 export interface AuthenticatedUser {
   userId: string;
   email: string;
   name: string;
+  role: UserRole;
+  isActive: boolean;
+  lastLogin?: Date;
 }
 
 export async function verifyToken(request: NextRequest): Promise<AuthenticatedUser | null> {
@@ -41,6 +44,9 @@ export async function verifyToken(request: NextRequest): Promise<AuthenticatedUs
       userId: user._id.toString(),
       email: user.email,
       name: user.name,
+      role: user.role,
+      isActive: user.isActive,
+      lastLogin: user.lastLogin,
     };
   } catch (error) {
     console.error('Token verification error:', error);

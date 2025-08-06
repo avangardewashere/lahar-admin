@@ -27,7 +27,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       return;
     }
 
-    const success = await register(email, password, name);
+    const success = await register(email, password, name, 'admin');
 
     if (!success) {
       setError('Registration failed. Please try again.');
